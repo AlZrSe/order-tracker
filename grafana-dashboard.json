@@ -1,0 +1,227 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": true},
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 80}]},
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "id": 1,
+      "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}},
+      "targets": [
+        {
+          "expr": "sum(rate(order_tracker_http_server_duration_milliseconds_count{job=\"otel-collector\"}[5m])) by (http_target, http_status_code)",
+          "legendFormat": "{{http_target}} - {{http_status_code}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Request Rate by Route & Status",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 0.01}, {"color": "red", "value": 0.05}]},
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+      "id": 2,
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""}, "textMode": "auto"},
+      "targets": [
+        {
+          "expr": "sum(rate(order_tracker_http_server_duration_milliseconds_count{job=\"otel-collector\",http_status_code=~\"5..\"}[5m])) / sum(rate(order_tracker_http_server_duration_milliseconds_count{job=\"otel-collector\"}[5m]))",
+          "legendFormat": "Error Rate (5xx)",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(order_tracker_http_server_duration_milliseconds_count{job=\"otel-collector\",http_status_code=~\"4..\"}[5m])) / sum(rate(order_tracker_http_server_duration_milliseconds_count{job=\"otel-collector\"}[5m]))",
+          "legendFormat": "Client Error Rate (4xx)",
+          "refId": "B"
+        }
+      ],
+      "title": "Error Rates",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": true},
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
+      "id": 3,
+      "options": {"legend": {"calcs": ["mean", "max"], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(order_tracker_http_server_duration_milliseconds_bucket{job=\"otel-collector\"}[5m])) by (le, http_target))",
+          "legendFormat": "p50 - {{http_target}}",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(order_tracker_http_server_duration_milliseconds_bucket{job=\"otel-collector\"}[5m])) by (le, http_target))",
+          "legendFormat": "p95 - {{http_target}}",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(order_tracker_http_server_duration_milliseconds_bucket{job=\"otel-collector\"}[5m])) by (le, http_target))",
+          "legendFormat": "p99 - {{http_target}}",
+          "refId": "C"
+        }
+      ],
+      "title": "Request Latency (p50, p95, p99) - ms",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 100}, {"color": "red", "value": 500}]},
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 8},
+      "id": 4,
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""}, "textMode": "auto"},
+      "targets": [
+        {
+          "expr": "sum(order_tracker_http_server_active_requests{job=\"otel-collector\"})",
+          "legendFormat": "Active Requests",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Requests",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": true},
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 6, "y": 8},
+      "id": 5,
+      "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}},
+      "targets": [
+        {
+          "expr": "sum(rate(order_tracker_order_lookup_requests_total[5m])) by (route, status_code)",
+          "legendFormat": "{{route}} - {{status_code}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Order Lookup Request Rate (Custom Metric)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 0.1}, {"color": "red", "value": 0.5}]},
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 8, "w": 6, "x": 18, "y": 8},
+      "id": 6,
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"values": false, "calcs": ["mean", "max"], "fields": ""}, "textMode": "auto"},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(order_tracker_order_lookup_duration_seconds_bucket[5m])) by (le, route, status_code))",
+          "legendFormat": "p95 - {{route}} - {{status_code}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Order Lookup Latency p95 (Custom Metric)",
+      "type": "gauge"
+    },
+    {
+      "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 16},
+      "id": 7,
+      "options": {
+        "alertName": "",
+        "dashboardAlerts": false,
+        "alertInstanceLabelFilter": "",
+        "alertInstanceLimit": 10,
+        "sortOrder": 1,
+        "sortValue": "Active alerts first",
+        "stateFilter": {
+          "alerting": true,
+          "noData": true,
+          "normal": false,
+          "pending": true,
+          "errored": true
+        }
+      },
+      "title": "Alerts",
+      "type": "alerts"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["order-tracker", "observability"],
+  "templating": {"list": []},
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {},
+  "timezone": "",
+  "title": "Order Tracker - Request Metrics",
+  "uid": "order-tracker-requests",
+  "version": 1,
+  "weekStart": ""
+}
